@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI小海豹</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&family=ZCOOL+KuaiLe&family=ZCOOL+QingKe+HuangYou&family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;700&family=Noto+Serif+SC:wght@400;700&family=Long+Cang&family=Zhi+Mang+Xing&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .main-title {
+            font-size: 2.2em;
+            margin: 10px 0;
+            color: #FFD700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            text-align: center;
+        }
+
+        .container {
+            flex: 1;
+            width: 95%;
+            width: 1575px;
+            margin: 0 auto 5px;
+            background-color: #1E1E1E;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: flex;
+            height: calc(100vh - 140px);
+        }
+
+        .preview {
+            width: 70%;
+            padding: 15px;
+            background-color: #262626;
+            display: flex;
+            flex-direction: column;
+            overflow-y: hidden;
+        }
+
+        .preview-title, .config h2 {
+            color: #FFD700;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+
+        .preview-grid {
+            display: flex;
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .preview-item {
+            flex: 0 0 auto;
+            width: 100px;
+            height: 178px; /* 保持 9:16 的比例 */
+            background-color: #444;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .preview-item:hover {
+            transform: scale(1.05);
+        }
+
+        .preview-item.selected {
+            border: 1px solid #FFD700;
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .upload-button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            background-color: #333;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .upload-icon::before,
+        .upload-icon::after {
+            content: '';
+            position: absolute;
+            background-color: #fff;
+        }
+
+        .upload-icon::before {
+            width: 2px;
+            height: 20px;
+            top: 10px;
+            left: 19px;
+        }
+
+        .upload-icon::after {
+            width: 20px;
+            height: 2px;
+            top: 19px;
+            left: 10px;
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        .config {
+            width: 30%;
+            padding: 20px;
+            background-color: #1E1E1E;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        .config h2 {
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            background-color: #2A2A2A;
+            color: #e0e0e0;
+            border: none;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 15px;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: flex-end;
+            /* margin-bottom: 20px; */
+        }
+
+        button {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #121212;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.2);
+        }
+
+        .ai-list {
+            flex-grow: 0.1;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .custom-checkbox {
+            display: block;
+            position: relative;
+            padding-left: 35px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            user-select: none;
+        }
+
+        .custom-checkbox input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        .checkmark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 25px;
+            width: 25px;
+            background-color: #2A2A2A;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .custom-checkbox:hover input ~ .checkmark {
+            background-color: #333;
+        }
+
+        .custom-checkbox input:checked ~ .checkmark {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+        }
+
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+        }
+
+        .custom-checkbox input:checked ~ .checkmark:after {
+            display: block;
+        }
+
+        .custom-checkbox .checkmark:after {
+            left: 9px;
+            top: 5px;
+            width: 5px;
+            height: 10px;
+            border: solid #121212;
+            border-width: 0 3px 3px 0;
+            transform: rotate(45deg);
+        }
+
+        footer {
+            /* padding: 10px 0; */
+            text-align: center;
+            width: 100%;
+            font-size: 0.8em;
+            color: #666;
+            background-color: #121212;
+        }
+
+        .preview-section {
+            margin-bottom: 20px;
+        }
+
+        .preview-section:last-child {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .preview-posters {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .preview-poster {
+            aspect-ratio: 9 / 16;
+            background-color: #444;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.3s ease-in-out;
+            position: relative; /* 确保文字定海报 */
+            background-size: contain; /* 调整背景图片大小 */
+            background-repeat: no-repeat; /* 防止背景图片重复 */
+            background-position: center; /* 居中背景图片 */
+        }
+
+        .preview-poster img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-placeholder {
+            color: #888;
+            font-size: 0.9em;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .preview-grid::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .preview-grid::-webkit-scrollbar-thumb {
+            background-color: #FFD700;
+            border-radius: 2px;
+        }
+
+        .preview-grid::-webkit-scrollbar-track {
+            background-color: #333;
+        }
+
+        .preview-grid {
+            scrollbar-width: thin;
+            scrollbar-color: #FFD700 #333;
+        }
+
+        .preview-posters::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .preview-posters::-webkit-scrollbar-thumb {
+            background-color: #FFD700;
+            border-radius: 2px;
+        }
+
+        .preview-posters::-webkit-scrollbar-track {
+            background-color: #333;
+        }
+
+        .preview-posters {
+            scrollbar-width: thin;
+            scrollbar-color: #FFD700 #333;
+        }
+
+        .ai-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .ai-list::-webkit-scrollbar-thumb {
+            background-color: #FFD700;
+            border-radius: 2px;
+        }
+
+        .ai-list::-webkit-scrollbar-track {
+            background-color: #333;
+        }
+
+        .ai-list {
+            scrollbar-width: thin;
+            scrollbar-color: #FFD700 #333;
+        }
+
+        img {
+            user-drag: none;
+            -webkit-user-drag: none;
+            user-select: none;
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+        }
+
+        .preview-section:last-child,
+        .preview-posters {
+            scrollbar-width: thin;
+            scrollbar-color: #FFD700 #333;
+            scroll-behavior: smooth;
+        }
+
+        .preview-section:last-child::-webkit-scrollbar,
+        .preview-posters::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .preview-section:last-child::-webkit-scrollbar-thumb,
+        .preview-posters::-webkit-scrollbar-thumb {
+            background-color: #FFD700;
+            border-radius: 3px;
+        }
+
+        .preview-section:last-child::-webkit-scrollbar-track,
+        .preview-posters::-webkit-scrollbar-track {
+            background-color: #333;
+        }
+
+        .ai-list {
+            margin-bottom: 20px;
+        }
+
+        .ai-list div {
+            /* margin-bottom: 10px; */
+        }
+
+        .ai-list input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .ai-list label {
+            cursor: pointer;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #FFD700;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-overlay p {
+            color: #FFD700;
+            margin-top: 10px;
+        }
+
+        /* 添加淡入淡出动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0.3; } /* 不要完全淡出，保持一定的可见度 */
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out forwards;
+        }
+
+        .fade-out {
+            animation: fadeOut 0.3s ease-in-out forwards;
+        }
+
+        .text-styling {
+            margin-bottom: 20px;
+        }
+
+        .text-styling h2 {
+            margin-bottom: 10px;
+        }
+
+        .style-options {
+            display: flex;
+            justify-content: space-between;
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .style-column {
+            flex: 1;
+            margin-right: 20px;
+        }
+
+        .style-column:last-child {
+            margin-right: 0;
+        }
+
+        .style-option {
+            margin-bottom: 15px;
+        }
+
+        .style-option label {
+            display: block;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+
+        .style-option input[type="range"],
+        .style-option input[type="color"],
+        .style-option select {
+            width: 100%;
+            padding: 5px;
+            background-color: #444;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+        }
+
+        .range-with-value {
+            display: flex;
+            align-items: center;
+        }
+
+        .range-with-value input[type="range"] {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .range-with-value span {
+            min-width: 40px;
+            text-align: right;
+            color: #FFD700;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            /* margin-top: 20px; */
+        }
+
+        /* 添加用于文字样��的 CSS 类 */
+        .poster-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            white-space: pre-wrap;
+            text-align: center;
+            pointer-events: none; /* 禁止鼠标事件 */
+            text-shadow: 1px 1px #000;
+            writing-mode: vertical-rl; /* 竖排版 */
+        }
+        .poster-info {
+            position: absolute;
+            bottom: 10px; /* 调整底部位置 */
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            color: #fff;
+            font-family: 'Roboto', sans-serif;
+            text-shadow: 1px 1px 1px #000; /* 增加1px阴影模糊 */
+        }
+        .poster-info .date {
+            font-size: 0.8em; /* 调整日期字体大小 */
+        }
+        .poster-info .day {
+            font-size: 0.6em; /* 调整星期字体大小 */
+        }
+
+        .tags {
+            display: inline-flex;
+            gap: 10px;
+            margin-left: 20px;
+            vertical-align: middle;
+        }
+
+        .tag {
+            padding: 3px 8px;
+            border-radius: 15px;
+            cursor: pointer;
+            background-color: transparent;
+            border: 1px solid #FFD700;
+            color: #FFD700;
+            font-weight: bold;
+            font-size: 0.8em; /* 调整大小 */
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .tag.selected {
+            background-color: #FFD700;
+            color: #121212;
+            border-color: #FFA500;
+        }
+
+        .ai-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .ai-list label {
+            flex: 1 1 calc(50% - 10px); /* 调整宽度 */
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%; /* 确保文本不会溢出 */
+        }
+
+        .ai-list input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .ai-list .ellipsis {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: calc(100% - 35px); /* 确保文本不会溢出 */
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .ai-list .tooltip {
+            display: none;
+            position: absolute;
+            top: -5px;
+            left: 105%;
+            background-color: #333;
+            color: #fff;
+            padding: 5px;
+            border-radius: 5px;
+            white-space: nowrap;
+            z-index: 10;
+            font-size: 0.8em;
+            opacity: 0.7; /* 调整透明度 */
+        }
+
+        .custom-checkbox:hover .tooltip {
+            display: block;
+        }
+
+        .settings-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            color: #FFD700;
+            font-size: 1.5em;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #1E1E1E;
+            padding: 20px;
+            border-radius: 10px;
+            position: relative;
+            width: 90%; /* 调整宽度以防止出界 */
+            max-width: 400px; /* 设置最大宽度 */
+            text-align: center;
+        }
+
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #FFD700;
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+
+        .modal input {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: none;
+            background-color: #333;
+            color: #FFD700;
+        }
+
+        .modal button {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #121212;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin: 0 auto; /* 按钮居中 */
+            display: block; /* 按钮居中 */
+        }
+
+        .modal button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.2);
+        }
+
+        .modal-content a {
+            color: #FFD700;
+            text-decoration: none;
+            border-bottom: 1px solid #FFD700;
+            transition: color 0.3s ease, border-bottom-color 0.3s ease;
+        }
+
+        .modal-content a:hover {
+            color: #FFA500;
+            border-bottom-color: #FFA500;
+        }
+
+        .modal-content p {
+            margin: 10px 0;
+        }
+
+        .editable-suggestion {
+            background: none;
+            border: none;
+            color: #e0e0e0;
+            width: calc(100% - 35px); /* 确保文本不会溢出 */
+            display: inline-block;
+            vertical-align: middle;
+            outline: none;
+            padding-left: 5px; /* 添加一些内边距以确保文本不被遮挡 */
+        }
+        .editable-suggestion[readonly] {
+            cursor: pointer;
+        }
+
+        .delete-suggestion {
+            cursor: pointer;
+            color: #888;
+            transition: color 0.3s ease;
+        }
+
+        .delete-suggestion:hover {
+            color: #ff0000;
+        }
+
+        .ai-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+        }
+
+        .editable-suggestion {
+            flex: 1;
+            padding: 5px;
+            background-color: #2A2A2A;
+            color: #e0e0e0;
+            border: none;
+            border-radius: 5px;
+            box-sizing: border-box;
+            white-space: pre-wrap; /* 允许换行 */
+        }
+
+        .delete-suggestion {
+            cursor: pointer;
+            color: #888;
+            transition: color 0.3s ease;
+        }
+
+        .delete-suggestion:hover {
+            color: #ff0000;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="main-title">AI 小海豹</h1>
+    <div class="container">
+        <div class="preview">
+            <div class="preview-section">
+                <h2 class="preview-title">预览海报
+                    <div class="tags">
+                        <div class="tag selected" id="gqTag">国庆专题</div>
+                        <div class="tag" id="randomTag">随机模版</div>
+                        <div class="tag" id="uploadTag">上传背景</div> <!-- 新增上传背景标签 -->
+                    </div>
+                </h2>
+                <div class="preview-posters">
+                    <!-- 15 个固定的预览容器将在这里生成 -->
+                </div>
+            </div>
+        </div>
+        <div class="config">
+            <h2>文字内容</h2>
+            <textarea id="userInput" placeholder="请输入内容，按照中文分号隔开：如：国泰民安 国庆快乐；繁荣昌盛 国庆吉祥；"></textarea>
+            <div class="button-container" style="gap: 10px;">
+                <button id="aiWriteBtn">
+                    <i class="fas fa-robot"></i>
+                    AI 帮写
+                </button>
+                <button id="generateTextBtn">
+                    <i class="fas fa-pen"></i>
+                    生成文案
+                </button>
+            </div>
+
+            <h2>选择文案</h2>
+            <p style="color: #888; font-size: 0.9em; margin: 5px 0;">删除不想要文案即可！</p> <!-- 调整提示的上下间隙 -->
+            <div id="aiSuggestions" class="ai-list">
+                <!-- AI 生成的建议将在这里显示 -->
+            </div>
+            <div class="button-container">
+                <button id="generateBtn">
+                    <i class="fas fa-wand-magic-sparkles"></i>
+                    确定生成
+                </button>
+            </div>
+
+            <div class="text-styling">
+                <h2>文字排版</h2>
+                <div class="style-options">
+                    <div class="style-column">
+                        <div class="style-option">
+                            <label for="font-family">字体：</label>
+                            <select id="font-family">
+                                <option value="宋体">宋</option>
+                                <option value="黑体">黑体</option>
+                                <option value="ZCOOL KuaiLe">ZCOOL KuaiLe</option>
+                                <option value="ZCOOL QingKe HuangYou">ZCOOL QingKe HuangYou</option>
+                                <option value="Ma Shan Zheng">Ma Shan Zheng</option>
+                                <option value="Noto Sans SC">Noto Sans SC</option>
+                                <option value="Noto Serif SC">Noto Serif SC</option>
+                                <option value="Long Cang">Long Cang</option>
+                                <option value="Zhi Mang Xing">Zhi Mang Xing</option>
+                                <option value="ZCOOL XiaoWei">ZCOOL XiaoWei</option>
+                            </select>
+                        </div>
+                        <div class="style-option">
+                            <label for="font-size">字号：</label>
+                            <div class="range-with-value">
+                                <input type="range" id="font-size" min="12" max="48" value="18">
+                                <span id="font-size-value">18px</span>
+                            </div>
+                        </div>
+                        <div class="style-option">
+                            <label for="font-color">颜色：</label>
+                            <input type="color" id="font-color" value="#ffffff">
+                        </div>
+                    </div>
+                    <div class="style-column">
+                        <div class="style-option">
+                            <label for="stroke-width">描边宽度：</label>
+                            <div class="range-with-value">
+                                <input type="range" id="stroke-width" min="0" max="5" value="0">
+                                <span id="stroke-width-value">0px</span>
+                            </div>
+                        </div>
+                        <div class="style-option">
+                            <label for="stroke-color">描边颜色：</label>
+                            <input type="color" id="stroke-color" value="#000000">
+                        </div>
+                        <div class="style-option">
+                            <label for="shadow-blur">阴影模糊：</label>
+                            <div class="range-with-value">
+                                <input type="range" id="shadow-blur" min="0" max="10" value="1">
+                                <span id="shadow-blur-value">1px</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="style-column">
+                        <div class="style-option">
+                            <label for="shadow-color">阴影颜色：</label>
+                            <input type="color" id="shadow-color" value="#000000">
+                        </div>
+                        <div class="style-option">
+                            <label for="text-rotation">旋转：</label>
+                            <div class="range-with-value">
+                                <input type="range" id="text-rotation" min="-180" max="180" value="0">
+                                <span id="text-rotation-value">0°</span>
+                            </div>
+                        </div>
+                        <div class="style-option">
+                            <label for="glow-strength">发光强度：</label>
+                            <div class="range-with-value">
+                                <input type="range" id="glow-strength" min="0" max="20" value="0">
+                                <span id="glow-strength-value">0px</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 添加全部导出按钮 -->
+            <div class="button-container">
+                <button id="exportAllBtn">
+                    <i class="fas fa-download"></i>
+                    批量导出
+                </button>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <p>Copyright © 2024 | Powered by Jartto</p>
+    </footer>
+
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner"></div>
+        <p id="loadingText">图片正在导出中，请耐心等待！</p>
+    </div>
+
+    <i class="fas fa-cog settings-icon" id="settingsIcon"></i>
+    <div class="modal" id="appKeyModal">
+        <div class="modal-content">
+            <span class="close" id="closeModal">&times;</span>
+            <h2>设置 AppKey</h2>
+            <p>AI 大模型使用 Kimi API，请先前往 <a href="https://platform.moonshot.cn/console/api-keys" target="_blank">Kimi 官网</a>申请！</p>
+            <input type="password" id="appKeyInput" placeholder="请输入 AppKey">
+            <button id="saveAppKeyBtn">保存</button>
+        </div>
+    </div>
+
+    <div class="modal" id="uploadModal">
+        <div class="modal-content">
+            <span class="close" id="closeUploadModal">&times;</span>
+            <h2>上传背景图片</h2>
+            <input type="file" id="uploadInput" accept="image/*">
+            <button id="uploadBtn">上传</button>
+        </div>
+    </div>
+
+    <script>
+        // 定义两个图片数组
+        const gqImages = [
+            'https://github.com/2agi/sources/blob/main/1.png?raw=true',
+            'https://github.com/2agi/sources/blob/main/2.jpg?raw=true',
+            'https://github.com/2agi/sources/blob/main/3.png?raw=true',
+            'https://github.com/2agi/sources/blob/main/4.png?raw=true',
+            'https://github.com/2agi/sources/blob/main/5.png?raw=true',
+            'https://github.com/2agi/sources/blob/main/6.png?raw=true',
+            'https://github.com/2agi/sources/blob/main/7.png?raw=true',
+            'https://github.com/2agi/sources/blob/main/8.png?raw=true',
+            'https://github.com/2agi/sources/blob/main/9.png?raw=true',
+            'https://github.com/2agi/sources/blob/main/10.png?raw=true',
+            'https://github.com/2agi/sources/blob/main/11.png?raw=true',
+            'https://github.com/2agi/sources/blob/main/12.png?raw=true',
+            'https://github.com/2agi/sources/blob/main/13.png?raw=true',
+            'https://github.com/2agi/sources/blob/main/14.png?raw=true',
+            'https://github.com/2agi/sources/blob/main/15.jpg?raw=true',
+            'https://github.com/2agi/sources/blob/main/16.jpg?raw=true',
+            'https://github.com/2agi/sources/blob/main/17.png?raw=true',
+            'https://github.com/2agi/sources/blob/main/18.png?raw=true'
+        ];
+
+        const templateImages = [
+            'https://picsum.photos/300/533',
+            'https://picsum.photos/300/534',
+            'https://picsum.photos/300/535',
+            'https://picsum.photos/300/536',
+            'https://picsum.photos/300/537',
+            'https://picsum.photos/300/538',
+            'https://picsum.photos/300/539',
+            'https://picsum.photos/300/540',
+            'https://picsum.photos/300/541',
+            'https://picsum.photos/300/542',
+            'https://picsum.photos/300/543',
+            'https://picsum.photos/300/544'
+        ];
+
+        let currentImages = gqImages; // 默认使用国庆专题图片
+
+        // 页面加载时创建固定的预览容器
+        window.addEventListener('DOMContentLoaded', (event) => {
+            createPreviewContainers();
+            displaySuggestions(gqSuggestions); // 默认显示国庆专题的文案
+        });
+        function createPreviewContainers() {
+            const previewPosters = document.querySelector('.preview-posters');
+            previewPosters.innerHTML = ''; // 清空之前的内容
+            for (let i = 0; i < 15; i++) {
+                const poster = document.createElement('div');
+                poster.className = 'preview-poster';
+                poster.innerHTML = '<div class="preview-placeholder">请选择文案</div>';
+                previewPosters.appendChild(poster);
+            }
+        }
+
+        // 修改确定生成按钮的功能
+        document.getElementById('generateBtn').addEventListener('click', function() {
+            const suggestions = Array.from(document.querySelectorAll('.editable-suggestion'))
+                .map(input => input.value.trim())
+                .filter(value => value);
+            if (suggestions.length === 0) {
+                alert('请至少输入一个文案');
+                return;
+            }
+            // 显示加载覆盖层并设置文字
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const loadingText = document.getElementById('loadingText');
+            loadingText.textContent = '生成中，请耐心等待~';
+            loadingOverlay.style.display = 'flex';
+            generatePreviewPosters(suggestions);
+        });
+
+        function generatePreviewPosters(texts) {
+            const previewPosters = document.querySelectorAll('.preview-poster');
+            const shuffledImages = shuffleArray([...currentImages]);
+            const shuffledTexts = shuffleArray([...texts]);
+
+            // 显示加载覆盖层
+            document.getElementById('loadingOverlay').style.display = 'flex';
+
+            let loadedCount = 0;
+            const totalCount = previewPosters.length;
+
+            previewPosters.forEach((poster, index) => {
+                // 保持容器存在,但不加淡出效果
+                poster.classList.remove('fade-in');
+                poster.classList.add('fade-out');
+                
+                // 清空容器内容,但保留占位符
+                poster.innerHTML = '<div class="preview-placeholder">生成中...</div>';
+
+                setTimeout(() => {
+                    const img = new Image();
+                    // img.crossOrigin = "anonymous"; // 确保跨域图片可以被加载
+                    img.onload = function() {
+                        poster.style.backgroundImage = `url(${img.src})`;
+                        poster.innerHTML = `
+                            <div class="poster-text" style="text-shadow: 1px 1px #000;">${shuffledTexts[index % shuffledTexts.length]}</div>
+                            <div class="poster-info">
+                                <div class="date">${getCurrentDate()}</div>
+                                <div class="day">${getCurrentDay()}</div>
+                            </div>
+                        `;
+
+                        // 存储文本和背景图片信息,以便后续更新
+                        poster.dataset.text = shuffledTexts[index % shuffledTexts.length];
+                        poster.dataset.background = img.src;
+
+                        poster.classList.remove('fade-out');
+                        poster.classList.add('fade-in');
+
+                        loadedCount++;
+                        if (loadedCount === totalCount) {
+                            // 所有海报都加载完成后,隐藏加载覆盖层
+                            document.getElementById('loadingOverlay').style.display = 'none';
+                        }
+                    };
+                    img.onerror = function() {
+                        console.error('Error loading image:', shuffledImages[index % shuffledImages.length]);
+                        poster.innerHTML = '<div class="preview-placeholder">图片加载失败</div>';
+                        poster.classList.remove('fade-out');
+                        poster.classList.add('fade-in');
+
+                        loadedCount++;
+                        if (loadedCount === totalCount) {
+                            // 所有海报都加载完成后,隐藏加载覆盖层
+                            document.getElementById('loadingOverlay').style.display = 'none';
+                        }
+                    };
+                    img.src = shuffledImages[index % shuffledImages.length];
+                }, 300);
+            });
+        }
+
+        // 切换标签功能
+        document.getElementById('gqTag').addEventListener('click', function() {
+            currentImages = gqImages.map(image => new URL(image, window.location.href).href);
+            document.getElementById('gqTag').classList.add('selected');
+            document.getElementById('randomTag').classList.remove('selected');
+            document.getElementById('uploadTag').classList.remove('selected');
+            displaySuggestions(gqSuggestions); // 显示国庆专题的文案
+            createPreviewContainers(); // 重置预览容器
+        });
+
+        document.getElementById('randomTag').addEventListener('click', function() {
+            currentImages = templateImages;
+            document.getElementById('gqTag').classList.remove('selected');
+            document.getElementById('randomTag').classList.add('selected');
+            document.getElementById('uploadTag').classList.remove('selected');
+            displaySuggestions(defaultSuggestions); // 显示默认的随机文案
+            createPreviewContainers(); // 重置预览容器
+        });
+
+        // 上传背景功能
+        document.getElementById('uploadTag').addEventListener('click', function() {
+            document.getElementById('uploadModal').style.display = 'flex';
+            document.getElementById('gqTag').classList.remove('selected');
+            document.getElementById('randomTag').classList.remove('selected');
+            document.getElementById('uploadTag').classList.add('selected');
+        });
+
+        document.getElementById('closeUploadModal').addEventListener('click', function() {
+            document.getElementById('uploadModal').style.display = 'none';
+        });
+
+        document.getElementById('uploadBtn').addEventListener('click', function() {
+            const fileInput = document.getElementById('uploadInput');
+            if (fileInput.files.length === 0) {
+                alert('请选择一张图片');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const uploadedImage = e.target.result;
+                currentImages = [uploadedImage]; // 将当前图片数组设置为用户上传的图片
+                createPreviewContainers(); // 重置预览容器
+                document.getElementById('uploadModal').style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // 预置的默认文案
+        const defaultSuggestions = [
+            "生活如茶苦尽回甘",
+            "心若向阳无谓悲伤",
+            "淡看世事去如烟",
+            "宁静致远淡明志",
+            "心有多宽世界就有多大",
+            "不以喜不以己悲",
+            "万般皆是命半点不由人",
+            "水到渠成瓜熟蒂落",
+            "书山有路勤为径",
+            "厚德载物自强不息"
+        ];
+
+        // 庆专题的默认文案
+        const gqSuggestions = [
+            "国泰民安 国庆快乐",
+            "繁荣昌盛 国庆吉祥",
+            "祖国万岁 国庆安康",
+            "盛世华诞 国庆如意",
+            "国富民强 国庆顺心",
+            "国泰民安 国庆喜乐",
+            "国庆佳节 福满人间",
+            "国泰民安 国庆欢庆",
+            "国庆佳节 喜气洋洋",
+            "国泰民安 国庆祥和"
+        ];
+
+        // 页面加载时显示默认文案
+        window.addEventListener('DOMContentLoaded', (event) => {
+            displaySuggestions(gqSuggestions); // 默认显示国庆专题的文案
+        });
+
+        function displaySuggestions(suggestions) {
+            const aiSuggestions = document.getElementById('aiSuggestions');
+            aiSuggestions.innerHTML = '';
+            suggestions.forEach((suggestion, index) => {
+                const cleanSuggestion = suggestion.replace(/[""''()（）\[\]【】{}]/g, '').replace(/[，。！？]/g, ' ').trim();
+                
+                if (cleanSuggestion) {  // 确保过滤后的文案不为空
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.innerHTML = `
+                        <input type="text" class="editable-suggestion" value="${cleanSuggestion}">
+                        <i class="fas fa-times delete-suggestion"></i>
+                        <span class="tooltip">点击删除</span> <!-- 添加提示内容 -->
+                    `;
+                    aiSuggestions.appendChild(div);
+
+                    // 添加删除按钮功能
+                    div.querySelector('.delete-suggestion').addEventListener('click', function() {
+                        div.remove();
+                        updatePreview();
+                    });
+
+                    // 添加输入框修改功能
+                    const input = div.querySelector('.editable-suggestion');
+                    input.addEventListener('blur', function() {
+                        this.value = this.value.trim(); // 去除前后空格
+                        updatePreview();
+                    });
+
+                    // 添加回车键事件监听器，使输入框失去焦点
+                    input.addEventListener('keydown', function(event) {
+                        if (event.key === 'Enter') {
+                            this.blur();
+                        }
+                    });
+
+                    // 添加输入框修改事件监听器
+                    input.addEventListener('input', function() {
+                        updatePreview();
+                    });
+                }
+            });
+        }
+
+        // 检查 AppKey 是否存在
+        function getAppKey() {
+            const appKey = localStorage.getItem('appKey');
+            const expiry = localStorage.getItem('appKeyExpiry');
+            if (appKey && expiry && new Date().getTime() < expiry) {
+                return appKey;
+            }
+            return null;
+        }
+
+        // 保存 AppKey
+        function saveAppKey(appKey) {
+            const expiry = new Date().getTime() + 24 * 60 * 60 * 1000; // 1 天
+            localStorage.setItem('appKey', appKey);
+            localStorage.setItem('appKeyExpiry', expiry);
+        }
+
+        // 显示弹窗
+        function showModal() {
+            document.getElementById('appKeyModal').style.display = 'flex';
+        }
+
+        // 隐藏弹窗
+        function hideModal() {
+            document.getElementById('appKeyModal').style.display = 'none';
+        }
+
+        // 绑定事件
+        document.getElementById('settingsIcon').addEventListener('click', showModal);
+        document.getElementById('closeModal').addEventListener('click', hideModal);
+        document.getElementById('saveAppKeyBtn').addEventListener('click', function() {
+            const appKey = document.getElementById('appKeyInput').value;
+            if (appKey.trim()) {
+                saveAppKey(appKey);
+                hideModal();
+                alert('AppKey 已保存');
+            } else {
+                alert('请输入有效的 AppKey');
+            }
+        });
+
+        // AI 帮写功能
+        document.getElementById('aiWriteBtn').addEventListener('click', async function() {
+            const appKey = getAppKey();
+            if (!appKey) {
+                showModal();
+                return;
+            }
+
+            const userInput = document.getElementById('userInput').value;
+            if (!userInput.trim()) {
+                alert('请先输入一些文字');
+                return;
+            }
+
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const loadingText = document.getElementById('loadingText');
+            loadingText.textContent = 'AI 生成中，请稍后~';
+            loadingOverlay.style.display = 'flex';
+
+            try {
+                const response = await fetch('https://api.moonshot.cn/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${appKey}`
+                    },
+                    body: JSON.stringify({
+                        model: 'moonshot-v1-32k',
+                        messages: [
+                            { role: 'system', content: '你是一个文案师,擅长按照用户给定的关键词,写一些治愈系风格的文案,简单大气,富含哲理，令人感动。要求：1、每次生成 10 条；2、字数控制在 15字以内；3、以 JSON 格式输出,多条数据放在一个数组中；' },
+                            { role: 'user', content: userInput }
+                        ],
+                        temperature: 0.3
+                    })
+                });
+
+                const data = await response.json();
+                if (data.choices && data.choices.length > 0) {
+                    let suggestions;
+                    try {
+                        suggestions = JSON.parse(data.choices[0].message.content);
+                    } catch (parseError) {
+                        console.error('Error parsing JSON:', parseError);
+                        suggestions = data.choices[0].message.content.split('\n').filter(s => s.trim());
+                    }
+                    
+                    if (Array.isArray(suggestions)) {
+                        // 去除引号，句号等，句子中间的符号替换为空格
+                        suggestions = suggestions.map(s => s.replace(/[""''()（）\[\]【】{}]/g, '').replace(/[，。！？]/g, ' ').trim());
+                        displaySuggestions(suggestions);
+                    } else {
+                        console.error('Suggestions is not an array:', suggestions);
+                        alert('获取 AI 建议时出错,请稍后再试');
+                    }
+                } else {
+                    throw new Error('No suggestions received');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('获取 AI 建议时出错,请稍后再试');
+            } finally {
+                loadingOverlay.style.display = 'none';
+            }
+        });
+
+        // 禁止图片拖拽
+        document.addEventListener('dragstart', function(e) {
+            if (e.target.tagName.toLowerCase() === 'img') {
+                e.preventDefault();
+            }
+        });
+
+        // 修改 updateTextStyle 函数
+        function updateTextStyle() {
+            // 更新显示值
+            document.getElementById('font-size-value').textContent = `${document.getElementById('font-size').value}px`;
+            document.getElementById('stroke-width-value').textContent = `${document.getElementById('stroke-width').value}px`;
+            document.getElementById('shadow-blur-value').textContent = `${document.getElementById('shadow-blur').value}px`;
+            document.getElementById('text-rotation-value').textContent = `${document.getElementById('text-rotation').value}°`;
+            document.getElementById('glow-strength-value').textContent = `${document.getElementById('glow-strength').value}px`;
+
+            // 应用文字样式
+            applyTextStyle();
+        }
+
+        // 为所有输入元素添加事件监听器
+        document.querySelectorAll('.text-styling input, .text-styling select').forEach(element => {
+            element.addEventListener('input', updateTextStyle);
+        });
+
+        // 添加全部导出功能
+        document.getElementById('exportAllBtn').addEventListener('click', exportAllPosters);
+
+        function exportAllPosters() {
+            const posters = document.querySelectorAll('.preview-poster');
+            if (posters.length === 0) {
+                alert('没有可导出的海报,请先生成预览。');
+                return;
+            }
+
+            // 显示加载覆盖层
+            document.getElementById('loadingOverlay').style.display = 'flex';
+
+            // 创建一个 zip 文件
+            const zip = new JSZip();
+            let promises = [];
+
+            posters.forEach((poster, index) => {
+                const promise = html2canvas(poster, {
+                    backgroundColor: null,
+                    useCORS: true,
+                    allowTaint: true
+                }).then(canvas => {
+                    return new Promise((resolve) => {
+                        canvas.toBlob(blob => {
+                            zip.file(`poster_${index + 1}.png`, blob);
+                            resolve();
+                        });
+                    });
+                }).catch(error => {
+                    console.error(`Error generating canvas for poster ${index + 1}:`, error);
+                });
+                promises.push(promise);
+            });
+
+            Promise.all(promises).then(() => {
+                zip.generateAsync({type:"blob"}).then(function(content) {
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(content);
+                    link.download = 'posters.zip';
+                    link.click();
+                    // 隐藏加载覆盖层
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                }).catch(error => {
+                    console.error('Error generating zip:', error);
+                    alert('导出过程中出现错误，请稍后再试。');
+                    // 隐藏加载覆盖层
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                });
+            }).catch(error => {
+                console.error('Error processing promises:', error);
+                alert('导出过程中出现错误，请稍后再试。');
+                // 隐藏加载覆盖层
+                document.getElementById('loadingOverlay').style.display = 'none';
+            });
+        }
+
+        function wrapText(context, text, x, y, maxWidth, lineHeight) {
+            const words = text.split('');
+            let lines = [];
+            let line = '';
+
+            for (let n = 0; n < words.length; n++) {
+                const testLine = line + words[n];
+                const metrics = context.measureText(testLine);
+                const testWidth = metrics.width;
+                if (testWidth > maxWidth && n > 0) {
+                    lines.push(line);
+                    line = words[n];
+                } else {
+                    line = testLine;
+                }
+            }
+            lines.push(line);
+
+            const totalHeight = lines.length * lineHeight;
+            let startY = y - (totalHeight / 2) + (lineHeight / 2);
+
+            lines.forEach((line) => {
+                const lineWidth = context.measureText(line).width;
+                context.fillText(line, x - lineWidth / 2, startY);
+                if (context.lineWidth > 0) {
+                    context.strokeText(line, x - lineWidth / 2, startY);
+                }
+                startY += lineHeight;
+            });
+        }
+
+        // 添加单独修改文字内容功能
+        document.querySelectorAll('.preview-poster').forEach(poster => {
+            poster.addEventListener('click', () => {
+                const newText = prompt('请输入新的文字内容:', poster.dataset.text || '');
+                if (newText !== null) {
+                    poster.dataset.text = newText;
+                    const textElement = poster.querySelector('.poster-text');
+                    if (textElement) {
+                        textElement.textContent = newText;
+                    }
+                    applyTextStyle();
+                }
+            });
+        });
+
+        function getCurrentDate() {
+            const date = new Date();
+            return date.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+        function getCurrentDay() {
+            const date = new Date();
+            return date.toLocaleDateString('zh-CN', { weekday: 'long' });
+        }
+
+        // 随机打乱数组的函数
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function applyTextStyle() {
+            const fontFamily = document.getElementById('font-family').value;
+            const fontSize = document.getElementById('font-size').value + 'px';
+            const fontColor = document.getElementById('font-color').value;
+            const strokeWidth = document.getElementById('stroke-width').value + 'px';
+            const strokeColor = document.getElementById('stroke-color').value;
+            const shadowBlur = document.getElementById('shadow-blur').value + 'px';
+            const shadowColor = document.getElementById('shadow-color').value;
+            const textRotation = document.getElementById('text-rotation').value + 'deg';
+            const glowStrength = document.getElementById('glow-strength').value + 'px';
+
+            const textStyle = `
+                font-family: ${fontFamily};
+                font-size: ${fontSize};
+                color: ${fontColor};
+                text-shadow: ${shadowBlur} ${shadowBlur} ${shadowColor};
+                transform: translate(-50%, -50%) rotate(${textRotation});
+                filter: drop-shadow(0 0 ${glowStrength} ${fontColor});
+            `;
+
+            const posterTexts = document.querySelectorAll('.poster-text');
+            posterTexts.forEach(text => {
+                text.style.cssText = textStyle;
+                if (strokeWidth !== '0px') {
+                    text.style.webkitTextStroke = `${strokeWidth} ${strokeColor}`;
+                } else {
+                    text.style.webkitTextStroke = 'none';
+                }
+            });
+        }
+
+        // 生成文案按钮功能
+        document.getElementById('generateTextBtn').addEventListener('click', function() {
+            const userInput = document.getElementById('userInput').value;
+            if (!userInput.trim()) {
+                alert('请先输入一些文字');
+                return;
+            }
+
+            // 按照中文分号隔开
+            const suggestions = userInput.split('；').map(s => s.trim()).filter(s => s);
+
+            // 显示生成的文案
+            displaySuggestions(suggestions);
+        });
+
+        // 更新预览
+        function updatePreview() {
+            const suggestions = Array.from(document.querySelectorAll('.editable-suggestion'))
+                .map(input => input.value.trim())
+                .filter(value => value);
+            generatePreviewPosters(suggestions);
+        }
+    </script>
+</body>
+</html>

@@ -11,6 +11,8 @@
       background-color: #0a0a0a;
       /* 暗黑色背景 */
       color: #e0e0e0;
+      background: url('img/bg.jpg') no-repeat center center fixed;
+      background-size: cover;
       font-family: "PingFang SC", -apple-system, Arial, "Microsoft YaHei", "Microsoft JhengHei", "Helvetica Neue", sans-serif;
       text-rendering: optimizeLegibility;
       -webkit-font-smoothing: antialiased;
@@ -52,13 +54,15 @@
       text-align: center;
       font-size: 2.5em;
       color: #ffffff;
+      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5); /* 增加阴影效果 */
     }
 
     .slogan {
       text-align: center;
       font-size: 1.2em;
       margin-top: -20px;
-      color: #b0b0b0;
+      color: #fff;
+      text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.5); /* 增加阴影效果 */
     }
 
     .search-box {
@@ -76,8 +80,8 @@
       font-size: 1.2em;
       border: none;
       border-radius: 30px;
-      background-color: #333;
-      color: #e0e0e0;
+      background-color: #f9f9f9d6;
+      color: #3d3a3a;
     }
 
     .search-box .search-icon {
@@ -85,7 +89,8 @@
       right: 20%;
       top: 50%;
       transform: translateY(-50%);
-      color: #b0b0b0;
+      color: #4f4d4d;
+      font-size: 1.5rem;
       cursor: pointer;
     }
 
@@ -176,9 +181,9 @@
     .article-meta {
       display: flex;
       align-items: center;
-      font-size: 0.8em;
+      font-size: 0.9em;
       /* 调整字体大小 */
-      color: #b0b0b0;
+      color: #ddeaff;
     }
 
     .article-meta .meta-info {
@@ -202,8 +207,8 @@
       height: 80px;
       margin-right: 15px;
       /* 增加间距 */
-      color: #b0b0b0;
-      background-color: #444;
+      color: #5e83e1;
+      background-color: #ffffffd1;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -221,7 +226,7 @@
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
       white-space: normal;
-      color: #e0e0e0;
+      color: #ffffff;
       line-height: 28px;
       text-align: justify;
     }
@@ -258,7 +263,7 @@
       min-height: calc(100vh - 380px);
       /* 设置最小高度为视口高度减去 50px */
       text-align: center;
-      color: #b0b0b0;
+      color: #ffffff;
       font-size: 1.2em;
       margin-top: 20px;
     }
@@ -286,18 +291,19 @@
     }
 
     .page-button.active {
-      background-color: #555;
+      background-color: #f2eaea75;
       font-weight: bold;
+      font-size: 0.9rem;
     }
 
     .page-button:hover {
-      background-color: #555;
+      background-color: #f2eaea75;
       transform: scale(1.1);
     }
 
     .search-box input:focus {
 
-      outline: 1px solid rgba(255, 255, 255, 1);
+      outline: 1px solid rgb(109, 137, 247);
       box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
       /* 初始发光效果 */
       animation: breathing-blue 2.5s infinite;
@@ -318,7 +324,7 @@
       }
     }
 
-    
+
     .tooltip {
       display: none;
       position: absolute;
@@ -337,7 +343,7 @@
   </div>
   <div class="container">
     <h1>AIGC 工具站</h1>
-    <p class="slogan">拥抱 AIGC，提升工作效率！</p>
+    <p class="slogan">海量工具任你选，学习工作好帮手！</p>
     <div class="search-box">
       <input type="text" id="search-input" placeholder="输入作者、工具名称、工作用途、使用场景等信息">
       <i class="fas fa-search search-icon" id="search-button"></i>
@@ -350,7 +356,7 @@
       <span class="tag" data-tag="职场办公">职场办公</span>
       <span class="tag" data-tag="社交媒体">社交媒体</span>
       <span class="tag" data-tag="数据分析">数据分析</span>
-      
+
     </div>
     <div class="article-list" id="article-list">
       <!-- Articles will be rendered here by JavaScript -->
@@ -366,7 +372,7 @@
   <footer style="text-align: center; color: #e0e0e0; margin-top: 10px;">
     <p style="font-size: 1.1em;">Copyright &copy; 2024, Powered by <a href="http://jartto.wang/"
         style="color: #e0e0e0; text-decoration: underline;">Jartto</a></p>
-    <p style="font-size: 0.9em; color: #a0a0a0;">
+    <p style="font-size: 0.8em; color: #a3c3fd;">
       <span id="busuanzi_container_site_pv">
         本站总访问量：<span id="busuanzi_value_site_pv"></span>次，
       </span>
