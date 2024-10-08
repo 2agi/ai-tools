@@ -26,6 +26,20 @@
     ]
   },
   {
+    "title": "AI文章摘要大师",
+    "content": "一款豆包智能体工具，能够精准总结文章摘要，并为其给出相应评分和理由的智能助手",
+    "url": "https://www.doubao.com/chat/77690471180290",
+    "author": "Jartto",
+    "date": "2024-10-08",
+    "views": "★★★★★",
+    "icon": "fa-list",
+    "tags": [
+      "职场办公",
+      "文章写作",
+      "数据分析"
+    ]
+  },
+  {
     "title": "即梦AI：字节跳动推出的一站式AI创作平台",
     "content": "平台提供AI绘画、视频生成等功能，降低创作门槛，激发创意。使用AI视频生成功能，输入文案或图片，即可生成流畅视频。",
     "url": "https://jimeng.jianying.com/",
@@ -41,6 +55,20 @@
     ]
   },
   {
+    "title": "AI爆款标题&悬念开头生成器",
+    "content": "一款豆包智能体工具，用于打造微信公众号爆款文章，擅长生成文章标题和充满神秘色彩的开头。能够精准剖析热门文章标题的特性，进行多维度创作",
+    "url": "https://www.doubao.com/chat/160012685547522",
+    "author": "Jartto",
+    "date": "2024-08-08",
+    "views": "★★★★★",
+    "icon": "fa-share-nodes",
+    "tags": [
+      "文章写作",
+      "营销推广",
+      "社交媒体"
+    ]
+  },
+  {
     "title": "Napkin AI：快速高效完成文本转可视化",
     "content": "AI办公工具，可以将文本快速转换为演示图像。适用于演示、社交媒体和文档等多种场景，帮助用户更有效地传达复杂概念。",
     "url": "https://www.napkin.ai/",
@@ -49,10 +77,23 @@
     "views": "★★★★★",
     "icon": "fa-feather-pointed",
     "tags": [
-      "内容创作",
+      "文章写作",
       "职场办公",
       "营销推广",
       "社交媒体"
+    ]
+  },
+  {
+    "title": "Prompt 优化大师",
+    "content": "一款豆包智能体工具，能够对用户给出的 Prompt 提示词进行优化，并提供评分和优化建议，助力用户以低成本创作出高质量的 Prompt 提示词。",
+    "url": "https://www.doubao.com/chat/173893988768002",
+    "author": "Jartto",
+    "date": "2024-07-15",
+    "views": "★★★★★",
+    "icon": "fa-arrow-up-right-dots",
+    "tags": [
+      "文章写作",
+      "数据分析"
     ]
   }
 ]
