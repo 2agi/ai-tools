@@ -378,10 +378,10 @@
         style="color: #e0e0e0; text-decoration: underline;">Jartto</a></p>
     <p style="font-size: 0.8em; color: #a3c3fd;">
       <span id="busuanzi_container_site_pv">
-        本站总访问量：<span id="busuanzi_value_site_pv"></span>次，
+        Total site visits: <span id="busuanzi_value_site_pv"></span>，
       </span>
       <span id="busuanzi_container_site_uv">
-        访客数：<span id="busuanzi_value_site_uv"></span>人
+        Unique visitors：<span id="busuanzi_value_site_uv"></span>
       </span>
     </p>
   </footer>
@@ -399,7 +399,6 @@
 
     // 当文档加载完成后执行
     document.addEventListener('DOMContentLoaded', function () {
-      // 使用fetch API请求同目录下的data.json文件
       fetch('data.json')
         .then(response => {
           // 确保请求成功
